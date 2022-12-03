@@ -8,6 +8,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var currentQuestion: QuizQuestion?
     private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenter?
+    private var statisticService: StatisticService?
     
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var textLabel: UILabel!
@@ -20,9 +21,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         imageView.layer.cornerRadius = 20
         
         questionFactory = QuestionFactory(delegate: self)
-        questionFactory?.requestNextQuestion()
-        
         alertPresenter = AlertPresenter(delegate: self)
+        statisticService = StatisticServiceImplementation()
+        
+        questionFactory?.requestNextQuestion()
     }
     
     func didReceiveNextQuestion(question: QuizQuestion?) {
@@ -94,7 +96,19 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     private func showNextQuestionOrResults() {
         if currentQuestionIndex == questionsAmount - 1 {
-            let text = "Ваш результат: \(correctAnswers) из 10"
+            statisticService?.store(correct: correctAnswers, total: questionsAmount)
+            
+            guard let gamesCount = statisticService?.gamesCount else { return }
+            guard let bestGame = statisticService?.bestGame else { return }
+            guard let totalAccuracy = statisticService?.totalAccuracy else { return }
+            
+            let text = """
+Ваш результат: \(correctAnswers)/\(questionsAmount)
+Количество сыгранных квизов: \(gamesCount)
+Рекорд: \(bestGame.correct)/\(bestGame.total) (\(bestGame.date.dateTimeString))
+Средняя точность: \(String(format: "%.2f", totalAccuracy))%
+"""
+            
             let viewModel = QuizResultsViewModel(
                 title: "Этот раунд окончен!",
                 text: text,
