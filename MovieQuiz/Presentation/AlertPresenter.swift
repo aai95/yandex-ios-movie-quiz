@@ -1,11 +1,10 @@
-import Foundation
 import UIKit
 
 struct AlertPresenter {
     
-    weak private var delegate: UIViewController?
+    weak private var delegate: AlertPresenterDelegate?
     
-    init(delegate: UIViewController?) {
+    init(delegate: AlertPresenterDelegate?) {
         self.delegate = delegate
     }
     
@@ -23,6 +22,6 @@ struct AlertPresenter {
             })
         
         alert.addAction(action)
-        delegate?.present(alert, animated: true)
+        delegate?.didPresentAlert(alert)
     }
 }

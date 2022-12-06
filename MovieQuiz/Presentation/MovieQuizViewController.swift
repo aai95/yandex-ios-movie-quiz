@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, AlertPresenterDelegate {
     
     private let questionsAmount: Int = 10
     private var correctAnswers: Int = 0
@@ -36,6 +36,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
+    }
+    
+    func didPresentAlert(_ alertToPresent: UIAlertController) {
+        present(alertToPresent, animated: true)
     }
     
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
