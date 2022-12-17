@@ -89,20 +89,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
     }
     
     private func showNetworkError(message: String) {
+        print("Fail to load data from server: \(message)")
         hideLoadingIndicator()
         
         let alertModel = AlertModel(
             title: "Что-то пошло не так",
-            message: message,
+            message: "Невозможно загрузить данные",
             buttonText: "Попробовать ещё раз",
             completion: { [weak self] in
                 guard let self = self else {
                     return
                 }
-                // self.presenter.restartGame()
+                self.questionFactory?.loadData()
+                self.showLoadingIndicator()
             })
         
-        // alertPresenter.show(in: self, model: model)
+        alertPresenter?.presentAlert(model: alertModel)
     }
     
     private func show(quiz step: QuizStepViewModel) {
