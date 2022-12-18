@@ -45,6 +45,10 @@ class QuestionFactory: QuestionFactoryProtocol {
             correctAnswer: false)
     ]
     */
+    private enum LoadError: Error {
+        case messageError(description: String)
+    }
+    
     private let moviesLoader: MoviesLoading
     
     weak private var delegate: QuestionFactoryDelegate?
@@ -64,8 +68,13 @@ class QuestionFactory: QuestionFactoryProtocol {
                 }
                 switch result {
                 case Result.success(let mostPopularMovies):
-                    self.movies = mostPopularMovies.items
-                    self.delegate?.didLoadDataFromServer()
+                    if mostPopularMovies.errorMessage.isEmpty {
+                        self.movies = mostPopularMovies.items
+                        self.delegate?.didLoadDataFromServer()
+                    } else {
+                        let error = LoadError.messageError(description: mostPopularMovies.errorMessage)
+                        self.delegate?.didFailToLoadData(with: error)
+                    }
                 case Result.failure(let error):
                     self.delegate?.didFailToLoadData(with: error)
                 }
