@@ -67,7 +67,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                     return
                 }
                 switch result {
-                case Result.success(let mostPopularMovies):
+                case .success(let mostPopularMovies):
                     if mostPopularMovies.errorMessage.isEmpty {
                         self.movies = mostPopularMovies.items
                         self.delegate?.didLoadDataFromServer()
@@ -75,7 +75,7 @@ class QuestionFactory: QuestionFactoryProtocol {
                         let error = LoadError.messageError(description: mostPopularMovies.errorMessage)
                         self.delegate?.didFailToLoadData(with: error)
                     }
-                case Result.failure(let error):
+                case .failure(let error):
                     self.delegate?.didFailToLoadData(with: error)
                 }
             }
