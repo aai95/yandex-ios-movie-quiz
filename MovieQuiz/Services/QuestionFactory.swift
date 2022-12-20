@@ -49,6 +49,11 @@ class QuestionFactory: QuestionFactoryProtocol {
         case messageError(description: String)
     }
     
+    private enum Sign: String, CaseIterable {
+        case less = "меньше"
+        case more = "больше"
+    }
+    
     private let moviesLoader: MoviesLoading
     
     weak private var delegate: QuestionFactoryDelegate?
@@ -100,9 +105,12 @@ class QuestionFactory: QuestionFactoryProtocol {
                 print("Failed to load image")
             }
             
-            let text = "Рейтинг этого фильма больше чем 7?"
+            let sign = Sign.allCases.randomElement() ?? .less
+            let number = (4..<8).randomElement() ?? 4
             let rating = Float(movie.rating) ?? 0
-            let correctAnswer = rating > 7
+            
+            let text = "Рейтинг этого фильма \(sign.rawValue) чем \(number)?"
+            let correctAnswer = (sign == .less) ? rating < Float(number) : rating > Float(number)
             
             let question = QuizQuestion(image: imageData,
                                         text: text,
