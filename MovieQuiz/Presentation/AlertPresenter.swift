@@ -22,6 +22,8 @@ struct AlertPresenter {
             })
         
         alert.addAction(action)
+        alert.view.accessibilityIdentifier = "Game results"
+        
         delegate?.didPresentAlert(alert)
     }
 }
