@@ -1,19 +1,32 @@
 import UIKit
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     let questionsAmount: Int = 10
     
-    var correctAnswers: Int = 0
-    var questionFactory: QuestionFactoryProtocol?
-    
+    private var correctAnswers: Int = 0
     private var currentQuestionIndex: Int = 0
     private var currentQuestion: QuizQuestion?
+    private var questionFactory: QuestionFactoryProtocol?
     
-    weak var viewController: MovieQuizViewController?
+    weak private var viewController: MovieQuizViewController?
     
-    func resetQuestionIndex() {
+    init(viewController: MovieQuizViewController) {
+        self.viewController = viewController
+        self.viewController?.showLoadingIndicator()
+        
+        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
+        loadQuestions()
+    }
+    
+    func loadQuestions() {
+        questionFactory?.loadData()
+    }
+    
+    func restartGame() {
+        correctAnswers = 0
         currentQuestionIndex = 0
+        questionFactory?.requestNextQuestion()
     }
     
     func switchToNextQuestion() {
@@ -22,6 +35,12 @@ final class MovieQuizPresenter {
     
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
+    }
+    
+    func didAnswer(isCorrectAnswer: Bool) {
+        if isCorrectAnswer {
+            correctAnswers += 1
+        }
     }
     
     func noButtonClicked() {
@@ -68,6 +87,15 @@ final class MovieQuizPresenter {
         DispatchQueue.main.async { [weak self] in
             self?.viewController?.show(quiz: viewModel)
         }
+    }
+    
+    func didLoadDataFromServer() {
+        viewController?.hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        viewController?.showNetworkError(message: error.localizedDescription)
     }
     
     private func didAnswer(isYes: Bool) {

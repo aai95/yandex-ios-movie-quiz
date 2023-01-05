@@ -1,13 +1,10 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, AlertPresenterDelegate {
+final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
     
-    private var correctAnswers: Int = 0
-    private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenter?
     private var statisticService: StatisticService?
-    
-    private let presenter = MovieQuizPresenter()
+    private var presenter: MovieQuizPresenter!
     
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var textLabel: UILabel!
@@ -20,27 +17,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         super.viewDidLoad()
         imageView.layer.masksToBounds = true
         
-        questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         alertPresenter = AlertPresenter(delegate: self)
         statisticService = StatisticServiceImplementation()
-        
-        presenter.viewController = self
-        
-        questionFactory?.loadData()
-        showLoadingIndicator()
-    }
-    
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        presenter.didReceiveNextQuestion(question: question)
-    }
-    
-    func didLoadDataFromServer() {
-        hideLoadingIndicator()
-        questionFactory?.requestNextQuestion()
-    }
-    
-    func didFailToLoadData(with error: Error) {
-        showNetworkError(message: error.localizedDescription)
+        presenter = MovieQuizPresenter(viewController: self)
     }
     
     func didPresentAlert(_ alertToPresent: UIAlertController) {
@@ -55,17 +34,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
         presenter.yesButtonClicked()
     }
     
-    private func hideLoadingIndicator() {
+    func hideLoadingIndicator() {
         activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
     }
     
-    private func showLoadingIndicator() {
+    func showLoadingIndicator() {
         activityIndicator.isHidden = false
         activityIndicator.startAnimating()
     }
     
-    private func showNetworkError(message: String) {
+    func showNetworkError(message: String) {
         print("Fail to load data from server: \(message)")
         hideLoadingIndicator()
         
@@ -77,7 +56,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
                 guard let self = self else {
                     return
                 }
-                self.questionFactory?.loadData()
+                self.presenter?.loadQuestions()
                 self.showLoadingIndicator()
             })
         
@@ -99,18 +78,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
                 guard let self = self else {
                     return
                 }
-                self.correctAnswers = 0
-                self.presenter.resetQuestionIndex()
-                self.questionFactory?.requestNextQuestion()
+                self.presenter.restartGame()
             })
         
         alertPresenter?.presentAlert(model: alertModel)
     }
     
     func showAnswerResult(isCorrect: Bool) {
-        if isCorrect {
-            correctAnswers += 1
-        }
+        presenter.didAnswer(isCorrectAnswer: isCorrect)
         
         noButton.isEnabled = false
         yesButton.isEnabled = false
@@ -127,8 +102,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate, 
             self.noButton.isEnabled = true
             self.yesButton.isEnabled = true
             
-            self.presenter.correctAnswers = self.correctAnswers
-            self.presenter.questionFactory = self.questionFactory
             self.presenter.showNextQuestionOrResults()
         }
     }
