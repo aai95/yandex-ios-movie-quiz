@@ -3,7 +3,6 @@ import UIKit
 final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
     
     private var alertPresenter: AlertPresenter?
-    private var statisticService: StatisticService?
     private var presenter: MovieQuizPresenter!
     
     @IBOutlet weak private var imageView: UIImageView!
@@ -18,7 +17,6 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
         imageView.layer.masksToBounds = true
         
         alertPresenter = AlertPresenter(delegate: self)
-        statisticService = StatisticServiceImplementation()
         presenter = MovieQuizPresenter(viewController: self)
     }
     
@@ -42,6 +40,20 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
     func showLoadingIndicator() {
         activityIndicator.isHidden = false
         activityIndicator.startAnimating()
+    }
+    
+    func enableImageBorder(isCorrectAnswer: Bool) {
+        imageView.layer.borderWidth = 8
+        imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
+    }
+    
+    func disableImageBorder() {
+        imageView.layer.borderWidth = 0
+    }
+    
+    func enableButtons(set value: Bool) {
+        noButton.isEnabled = value
+        yesButton.isEnabled = value
     }
     
     func showNetworkError(message: String) {
@@ -82,27 +94,5 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
             })
         
         alertPresenter?.presentAlert(model: alertModel)
-    }
-    
-    func showAnswerResult(isCorrect: Bool) {
-        presenter.didAnswer(isCorrectAnswer: isCorrect)
-        
-        noButton.isEnabled = false
-        yesButton.isEnabled = false
-        
-        imageView.layer.borderWidth = 8
-        imageView.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-            guard let self = self else {
-                return
-            }
-            self.imageView.layer.borderWidth = 0
-            
-            self.noButton.isEnabled = true
-            self.yesButton.isEnabled = true
-            
-            self.presenter.showNextQuestionOrResults()
-        }
     }
 }
