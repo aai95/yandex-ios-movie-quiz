@@ -2,8 +2,8 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
     
+    private var presenter: MovieQuizPresenter?
     private var alertPresenter: AlertPresenter?
-    private var presenter: MovieQuizPresenter!
     
     @IBOutlet weak private var imageView: UIImageView!
     @IBOutlet weak private var textLabel: UILabel!
@@ -12,25 +12,33 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
     @IBOutlet weak private var yesButton: UIButton!
     @IBOutlet weak private var activityIndicator: UIActivityIndicatorView!
     
+    // MARK: - Life cycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         imageView.layer.masksToBounds = true
         
-        alertPresenter = AlertPresenter(delegate: self)
         presenter = MovieQuizPresenter(viewController: self)
+        alertPresenter = AlertPresenter(delegate: self)
     }
+    
+    // MARK: - AlertPresenterDelegate
     
     func didPresentAlert(_ alertToPresent: UIAlertController) {
         present(alertToPresent, animated: true)
     }
     
+    // MARK: - Actions
+    
     @IBAction private func noButtonClicked(_ sender: UIButton) {
-        presenter.noButtonClicked()
+        presenter?.noButtonClicked()
     }
     
     @IBAction private func yesButtonClicked(_ sender: UIButton) {
-        presenter.yesButtonClicked()
+        presenter?.yesButtonClicked()
     }
+    
+    // MARK: - Internal functions
     
     func hideLoadingIndicator() {
         activityIndicator.isHidden = true
@@ -42,12 +50,12 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
         activityIndicator.startAnimating()
     }
     
-    func enableImageBorder(isCorrectAnswer: Bool) {
+    func showImageBorder(isCorrectAnswer: Bool) {
         imageView.layer.borderWidth = 8
         imageView.layer.borderColor = isCorrectAnswer ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
     }
     
-    func disableImageBorder() {
+    func hideImageBorder() {
         imageView.layer.borderWidth = 0
     }
     
@@ -90,7 +98,7 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
                 guard let self = self else {
                     return
                 }
-                self.presenter.restartGame()
+                self.presenter?.restartGame()
             })
         
         alertPresenter?.presentAlert(model: alertModel)
