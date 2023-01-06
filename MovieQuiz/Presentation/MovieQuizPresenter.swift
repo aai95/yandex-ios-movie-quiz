@@ -21,7 +21,37 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         loadQuestions()
     }
     
+    // MARK: - QuestionFactoryDelegate
+    
+    func didLoadDataFromServer() {
+        controller?.hideLoadingIndicator()
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        controller?.showNetworkError(message: error.localizedDescription)
+    }
+    
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.controller?.show(quiz: viewModel)
+        }
+    }
+    
     // MARK: - Internal functions
+    
+    func noButtonClicked() {
+        didAnswer(isYes: false)
+    }
+    
+    func yesButtonClicked() {
+        didAnswer(isYes: true)
+    }
     
     func loadQuestions() {
         questionFactory?.loadData()
@@ -49,12 +79,19 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         }
     }
     
-    func noButtonClicked() {
-        didAnswer(isYes: false)
+    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+        return QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     
-    func yesButtonClicked() {
-        didAnswer(isYes: true)
+    private func didAnswer(isYes: Bool) {
+        guard let currentQuestion = currentQuestion else {
+            return
+        }
+        let givenAnswer = isYes
+        proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     private func proceedWithAnswer(isCorrect: Bool) {
@@ -100,42 +137,5 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         let averageLine = "Средняя точность: \(String(format: "%.2f", totalAccuracy))%"
         
         return [resultLine, countLine, bestLine, averageLine].joined(separator: "\n")
-    }
-    
-    // MARK: - QuestionFactoryDelegate
-    
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        guard let question = question else {
-            return
-        }
-        currentQuestion = question
-        let viewModel = convert(model: question)
-        DispatchQueue.main.async { [weak self] in
-            self?.controller?.show(quiz: viewModel)
-        }
-    }
-    
-    func didLoadDataFromServer() {
-        controller?.hideLoadingIndicator()
-        questionFactory?.requestNextQuestion()
-    }
-    
-    func didFailToLoadData(with error: Error) {
-        controller?.showNetworkError(message: error.localizedDescription)
-    }
-    
-    private func didAnswer(isYes: Bool) {
-        guard let currentQuestion = currentQuestion else {
-            return
-        }
-        let givenAnswer = isYes
-        proceedWithAnswer(isCorrect: givenAnswer == currentQuestion.correctAnswer)
-    }
-    
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        return QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
 }

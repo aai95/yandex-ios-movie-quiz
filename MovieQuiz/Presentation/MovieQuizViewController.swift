@@ -22,12 +22,6 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
         alertPresenter = AlertPresenter(delegate: self)
     }
     
-    // MARK: - AlertPresenterDelegate
-    
-    func didPresentAlert(_ alertToPresent: UIAlertController) {
-        present(alertToPresent, animated: true)
-    }
-    
     // MARK: - Actions
     
     @IBAction private func noButtonClicked(_ sender: UIButton) {
@@ -38,16 +32,17 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
         presenter?.yesButtonClicked()
     }
     
-    // MARK: - Internal functions
+    // MARK: - AlertPresenterDelegate
     
-    func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
-        activityIndicator.stopAnimating()
+    func didPresentAlert(_ alertToPresent: UIAlertController) {
+        present(alertToPresent, animated: true)
     }
     
-    func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
+    // MARK: - Internal functions
+    
+    func enableButtons(set value: Bool) {
+        noButton.isEnabled = value
+        yesButton.isEnabled = value
     }
     
     func showImageBorder(isCorrectAnswer: Bool) {
@@ -59,28 +54,14 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
         imageView.layer.borderWidth = 0
     }
     
-    func enableButtons(set value: Bool) {
-        noButton.isEnabled = value
-        yesButton.isEnabled = value
+    func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
     }
     
-    func showNetworkError(message: String) {
-        print("Fail to load data from server: \(message)")
-        hideLoadingIndicator()
-        
-        let alertModel = AlertModel(
-            title: "Что-то пошло не так",
-            message: "Невозможно загрузить данные",
-            buttonText: "Попробовать ещё раз",
-            completion: { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                self.presenter?.loadQuestions()
-                self.showLoadingIndicator()
-            })
-        
-        alertPresenter?.presentAlert(model: alertModel)
+    func hideLoadingIndicator() {
+        activityIndicator.stopAnimating()
+        activityIndicator.isHidden = true
     }
     
     func show(quiz step: QuizStepViewModel) {
@@ -99,6 +80,25 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
                     return
                 }
                 self.presenter?.restartGame()
+            })
+        
+        alertPresenter?.presentAlert(model: alertModel)
+    }
+    
+    func showNetworkError(message: String) {
+        print("Fail to load data from server: \(message)")
+        hideLoadingIndicator()
+        
+        let alertModel = AlertModel(
+            title: "Что-то пошло не так",
+            message: "Невозможно загрузить данные",
+            buttonText: "Попробовать ещё раз",
+            completion: { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                self.showLoadingIndicator()
+                self.presenter?.loadQuestions()
             })
         
         alertPresenter?.presentAlert(model: alertModel)
