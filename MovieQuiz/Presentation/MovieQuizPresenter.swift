@@ -8,11 +8,11 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var currentQuestionIndex: Int = 0
     private var currentQuestion: QuizQuestion?
     
-    weak private var controller: MovieQuizViewController?
+    weak private var controller: MovieQuizViewControllerProtocol?
     private var questionFactory: QuestionFactoryProtocol?
     private var statisticService: StatisticService?
     
-    init(viewController: MovieQuizViewController) {
+    init(viewController: MovieQuizViewControllerProtocol) {
         controller = viewController
         questionFactory = QuestionFactory(moviesLoader: MoviesLoader(), delegate: self)
         statisticService = StatisticServiceImplementation()
@@ -63,6 +63,13 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         questionFactory?.requestNextQuestion()
     }
     
+    func convert(model: QuizQuestion) -> QuizStepViewModel {
+        return QuizStepViewModel(
+            image: UIImage(data: model.image) ?? UIImage(),
+            question: model.text,
+            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+    }
+    
     // MARK: - Private functions
     
     private func switchToNextQuestion() {
@@ -77,13 +84,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         if isCorrectAnswer {
             correctAnswers += 1
         }
-    }
-    
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        return QuizStepViewModel(
-            image: UIImage(data: model.image) ?? UIImage(),
-            question: model.text,
-            questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
     
     private func didAnswer(isYes: Bool) {

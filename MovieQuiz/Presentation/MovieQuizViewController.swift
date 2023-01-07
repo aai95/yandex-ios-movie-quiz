@@ -1,6 +1,21 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
+protocol MovieQuizViewControllerProtocol: AnyObject {
+    func enableButtons(set value: Bool)
+    
+    func showImageBorder(isCorrectAnswer: Bool)
+    func hideImageBorder()
+    
+    func showLoadingIndicator()
+    func hideLoadingIndicator()
+    
+    func show(quiz step: QuizStepViewModel)
+    func show(quiz result: QuizResultsViewModel)
+    
+    func showNetworkError(message: String)
+}
+
+final class MovieQuizViewController: UIViewController, AlertPresenterDelegate, MovieQuizViewControllerProtocol {
     
     private var presenter: MovieQuizPresenter?
     private var alertPresenter: AlertPresenter?
@@ -38,7 +53,7 @@ final class MovieQuizViewController: UIViewController, AlertPresenterDelegate {
         present(alertToPresent, animated: true)
     }
     
-    // MARK: - Internal functions
+    // MARK: - MovieQuizViewControllerProtocol
     
     func enableButtons(set value: Bool) {
         noButton.isEnabled = value
