@@ -6,7 +6,11 @@ protocol MoviesLoading {
 
 struct MoviesLoader: MoviesLoading {
     
-    private let networkClient = NetworkClient()
+    private let networkClient: NetworkRouting
+    
+    init(networkClient: NetworkRouting = NetworkClient()) {
+        self.networkClient = networkClient
+    }
     
     private var mostPopularMoviesUrl: URL {
         guard let url = URL(string: "https://imdb-api.com/en/API/MostPopularMovies/k_5hdbrxpv") else {
