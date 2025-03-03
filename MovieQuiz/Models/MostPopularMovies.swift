@@ -7,7 +7,7 @@ struct MostPopularMovies: Codable {
 
 struct MostPopularMovie: Codable {
     let title: String
-    let rating: String
+    let rating: String?
     let imageURL: URL
     
     var resizedImageURL: URL {

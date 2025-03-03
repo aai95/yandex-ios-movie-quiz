@@ -107,7 +107,7 @@ class QuestionFactory: QuestionFactoryProtocol {
             
             let sign = Sign.allCases.randomElement() ?? .less
             let number = (4..<8).randomElement() ?? 4
-            let rating = Float(movie.rating) ?? 0
+            let rating = Float(movie.rating ?? "") ?? 0
             
             let text = "Рейтинг этого фильма \(sign.rawValue) чем \(number)?"
             let correctAnswer = (sign == .less) ? rating < Float(number) : rating > Float(number)
